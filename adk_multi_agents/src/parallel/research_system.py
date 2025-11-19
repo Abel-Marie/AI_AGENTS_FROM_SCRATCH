@@ -55,4 +55,17 @@ def create_research_system():
         output_key="executive_summary",
     )
 
+
+    # Parallel Team
+    parallel_research_team = ParallelAgent(
+        name="ParallelResearchTeam",
+        sub_agents=[tech_researcher, health_researcher, finance_researcher],
+    )
+
+    # Root Agent
+    root_agent = SequentialAgent(
+        name="ResearchSystem",
+        sub_agents=[parallel_research_team, aggregator_agent],
+    )
     
+    return root_agent
