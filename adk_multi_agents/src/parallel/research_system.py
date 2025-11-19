@@ -15,3 +15,15 @@ def create_research_system():
         tools=[google_search],
         output_key="tech_research",
     )
+
+    # Health Researcher 
+    health_researcher = Agent(
+        name="HealthResearcher",
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""Research recent medical breakthroughs. Include 3 significant advances,
+    their practical applications, and estimated timelines. Keep the report concise (100 words).""",
+        tools=[google_search],
+        output_key="health_research",
+    )
+
+    
