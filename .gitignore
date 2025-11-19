@@ -1,0 +1,22 @@
+
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+bin/
+build/
+develop-eggs/
+dist/
+*.egg-info/
+.vscode/
+.DS_Store # macOS
+Thumbs.db # Windows
+ehthumbs.db # Windows
+Desktop.ini # Windows
+.env
+config.env
+secrets.txt
+*.log # Ignore all log files
