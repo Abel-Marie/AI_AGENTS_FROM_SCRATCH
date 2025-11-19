@@ -35,3 +35,24 @@ def create_research_system():
         tools=[google_search],
         output_key="finance_research",
     )    
+
+    # Aggregator Agent
+    aggregator_agent = Agent(
+        name="AggregatorAgent",
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""Combine these three research findings into a single executive summary:
+
+        **Technology Trends:**
+        {tech_research}
+        
+        **Health Breakthroughs:**
+        {health_research}
+        
+        **Finance Innovations:**
+        {finance_research}
+
+        Your summary should highlight common themes, surprising connections, and the most important key takeaways from all three reports. The final summary should be around 200 words.""",
+        output_key="executive_summary",
+    )
+
+    
