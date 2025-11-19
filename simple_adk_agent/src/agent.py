@@ -18,3 +18,8 @@ def create_agent():
         instruction="You are a helpful assistant. Use Google Search For current info or if unsure.",
         tools=[google_search],
     )
+
+def create_runner(agent=None):
+    if agent is None:
+        agent = create_agent()
+    return InMemoryRunner(agent=agent)
