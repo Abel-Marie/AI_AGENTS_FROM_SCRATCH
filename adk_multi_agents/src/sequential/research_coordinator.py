@@ -16,3 +16,12 @@ def create_research_coordinator():
         output_key="research_findings",
     )
 
+    # Summarizer Agent
+    sumarizer_agent = Agent(
+        name="SummarizerAgent",
+        model = Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""Read the provided research findings: {research_findings}
+        Create a concise summary as a bulleted list with 3-5 key points.""",
+        output_key="final_summary",
+    ),
+
