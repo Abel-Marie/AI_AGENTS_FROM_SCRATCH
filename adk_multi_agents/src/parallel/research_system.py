@@ -26,4 +26,12 @@ def create_research_system():
         output_key="health_research",
     )
 
-    
+    # Finance Researcher
+    finance_researcher = Agent(
+        name="FinanceResearcher",
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""Research current fintech trends. Include 3 key trends,
+    their market implications, and the future outlook. Keep the report concise (100 words).""",
+        tools=[google_search],
+        output_key="finance_research",
+    )    
