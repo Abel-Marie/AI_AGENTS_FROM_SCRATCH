@@ -36,3 +36,37 @@ def get_fee_for_payment_method(method: str) -> dict:
             "status": "error",
             "error_message": f"Payment method '{method}' not found",
         }
+
+def get_exchange_rate(base_currency: str, target_currency: str) -> dict:
+    """Looks up and returns the exchange rate between two currencies.
+
+    Args:
+        base_currency: The ISO 4217 currency code of the currency you
+                       are converting from (e.g., "USD").
+        target_currency: The ISO 4217 currency code of the currency you
+                         are converting to (e.g., "EUR").
+
+    Returns:
+        Dictionary with status and rate information.
+        Success: {"status": "success", "rate": 0.93}
+        Error: {"status": "error", "error_message": "Unsupported currency pair"}
+    """
+    rate_database = {
+        "usd": {
+            "eur": 0.93,  # Euro
+            "jpy": 157.50,  # Japanese Yen
+            "inr": 83.58,  # Indian Rupee
+        }
+    }
+
+    base = base_currency.lower()
+    target = target_currency.lower()
+
+    rate = rate_database.get(base, {}).get(target)
+    if rate is not None:
+        return {"status": "success", "rate": rate}
+    else:
+        return {
+            "status": "error",
+            "error_message": f"Unsupported currency pair: {base_currency}/{target_currency}",
+        }
