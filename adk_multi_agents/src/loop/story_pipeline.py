@@ -32,3 +32,20 @@ def create_story_pipeline():
         output_key="critique",
     )
 
+    # Refiner Agent
+    refiner_agent = Agent(
+        name="RefinerAgent",
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""You are a story refiner. You have a story draft and critique.
+        
+        Story Draft: {current_story}
+        Critique: {critique}
+        
+        Your task is to analyze the critique.
+        - IF the critique is EXACTLY "APPROVED", you MUST call the `exit_loop` function and nothing else.
+        - OTHERWISE, rewrite the story draft to fully incorporate the feedback from the critique.""",
+        output_key="current_story",
+        tools=[FunctionTool(exit_loop)],
+    )
+
+    
