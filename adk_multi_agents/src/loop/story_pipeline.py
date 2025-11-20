@@ -48,4 +48,18 @@ def create_story_pipeline():
         tools=[FunctionTool(exit_loop)],
     )
 
+
+    # Loop Agent
+    story_refinement_loop = LoopAgent(
+        name="StoryRefinementLoop",
+        sub_agents=[critic_agent, refiner_agent],
+        max_iterations=2,
+    )
+
+    # Root Agent
+    root_agent = SequentialAgent(
+        name="StoryPipeline",
+        sub_agents=[initial_writer_agent, story_refinement_loop],
+    )
     
+    return root_agent
