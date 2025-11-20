@@ -10,4 +10,11 @@ def exit_loop():
 def create_story_pipeline():
     retry_config = get_retry_config()
 
-    
+    # Initial Writer Agent
+    initial_writer_agent = Agent(
+        name="InitialWriterAgent",
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""Based on the user's prompt, write the first draft of a short story (around 100-150 words).
+        Output only the story text, with no introduction or explanation.""",
+        output_key="current_story",
+    )
