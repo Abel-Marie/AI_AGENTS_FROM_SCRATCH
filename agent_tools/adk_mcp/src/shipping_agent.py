@@ -24,3 +24,14 @@ def place_shipping_order(
     Returns:
         Dictionary with order status
     """
+
+    # SCENARIO 1: Small orders (≤5 containers) auto-approve
+    if num_containers <= LARGE_ORDER_THRESHOLD:
+        return {
+            "status": "approved",
+            "order_id": f"ORD-{num_containers}-AUTO",
+            "num_containers": num_containers,
+            "destination": destination,
+            "message": f"Order auto-approved: {num_containers} containers to {destination}",
+        }
+   
