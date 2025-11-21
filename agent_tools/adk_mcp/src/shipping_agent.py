@@ -9,3 +9,18 @@ from google.adk.tools import ToolContext
 from google.adk.tools.function_tool import FunctionTool
 from .config import get_retry_config
 
+
+LARGE_ORDER_THRESHOLD = 5
+
+def place_shipping_order(
+    num_containers: int, destination: str, tool_context: ToolContext
+) -> dict:
+    """Places a shipping order. Requires approval if ordering more than 5 containers (LARGE_ORDER_THRESHOLD).
+
+    Args:
+        num_containers: Number of containers to ship
+        destination: Shipping destination
+
+    Returns:
+        Dictionary with order status
+    """
