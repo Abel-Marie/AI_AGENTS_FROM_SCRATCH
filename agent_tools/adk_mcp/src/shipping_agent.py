@@ -34,4 +34,13 @@ def place_shipping_order(
             "destination": destination,
             "message": f"Order auto-approved: {num_containers} containers to {destination}",
         }
-   
+    # SCENARIO 2: This is the first time this tool is called. Large orders need human approval - PAUSE here.
+    if not tool_context.tool_confirmation:
+        tool_context.request_confirmation(
+            hint=f"⚠️ Large order: {num_containers} containers to {destination}. Do you want to approve?",
+            payload={"num_containers": num_containers, "destination": destination},
+        )
+        return {  # This is sent to the Agent
+            "status": "pending",
+            "message": f"Order for {num_containers} containers requires approval",
+        }
