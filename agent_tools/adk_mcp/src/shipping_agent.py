@@ -44,3 +44,17 @@ def place_shipping_order(
             "status": "pending",
             "message": f"Order for {num_containers} containers requires approval",
         }
+    # SCENARIO 3: The tool is called AGAIN and is now resuming. Handle approval response - RESUME here.
+    if tool_context.tool_confirmation.confirmed:
+        return {
+            "status": "approved",
+            "order_id": f"ORD-{num_containers}-HUMAN",
+            "num_containers": num_containers,
+            "destination": destination,
+            "message": f"Order approved: {num_containers} containers to {destination}",
+        }
+    else:
+        return {
+            "status": "rejected",
+            "message": f"Order rejected: {num_containers} containers to {destination}",
+        }
