@@ -169,4 +169,24 @@ async def run_shipping_workflow(query: str, auto_approve: bool = True, session_s
 
     print(f"{'='*60}\n")
 
+
+async def run_shipping_demos():
+    """Runs the three shipping demo scenarios."""
+    print("--- Running Shipping Agent Demos ---")
     
+    session_service = InMemorySessionService()
+    shipping_app = create_shipping_app()
+    
+    shipping_runner = Runner(
+        app=shipping_app,
+        session_service=session_service,
+    )
+
+    # Demo 1: Small order (Auto-approve)
+    await run_shipping_workflow("Ship 3 containers to Singapore", session_service=session_service, runner=shipping_runner)
+
+    # Demo 2: Large order (Approve)
+    await run_shipping_workflow("Ship 10 containers to Rotterdam", auto_approve=True, session_service=session_service, runner=shipping_runner)
+
+    # Demo 3: Large order (Reject)
+    await run_shipping_workflow("Ship 8 containers to Los Angeles", auto_approve=False, session_service=session_service, runner=shipping_runner)
