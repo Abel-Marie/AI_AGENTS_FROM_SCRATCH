@@ -112,3 +112,14 @@ def print_agent_response(events):
             for part in event.content.parts:
                 if part.text:
                     print(f"Agent > {part.text}")
+
+def create_approval_response(approval_info, approved):
+    """Create approval response message."""
+    confirmation_response = types.FunctionResponse(
+        id=approval_info["approval_id"],
+        name="adk_request_confirmation",
+        response={"confirmed": approved},
+    )
+    return types.Content(
+        role="user", parts=[types.Part(function_response=confirmation_response)]
+    )
