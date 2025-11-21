@@ -80,3 +80,12 @@ def create_shipping_app():
         tools=[FunctionTool(func=place_shipping_order)],
     )
 
+    shipping_app = App(
+        name="shipping_coordinator",
+        root_agent=shipping_agent,
+        resumability_config=ResumabilityConfig(is_resumable=True),
+    )
+    
+    return shipping_app
+
+
