@@ -88,4 +88,20 @@ def create_shipping_app():
     
     return shipping_app
 
+# --- Helper Functions ---
+
+def check_for_approval(events):
+    """Check if events contain an approval request."""
+    for event in events:
+        if event.content and event.content.parts:
+            for part in event.content.parts:
+                if (
+                    part.function_call
+                    and part.function_call.name == "adk_request_confirmation"
+                ):
+                    return {
+                        "approval_id": part.function_call.id,
+                        "invocation_id": event.invocation_id,
+                    }
+    return None
 
