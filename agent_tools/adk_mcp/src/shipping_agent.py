@@ -123,3 +123,50 @@ def create_approval_response(approval_info, approved):
     return types.Content(
         role="user", parts=[types.Part(function_response=confirmation_response)]
     )
+
+async def run_shipping_workflow(query: str, auto_approve: bool = True, session_service=None, runner=None):
+    """Runs a shipping workflow with approval handling."""
+    print(f"\n{'='*60}")
+    print(f"User > {query}\n")
+
+    # Generate unique session ID
+    session_id = f"order_{uuid.uuid4().hex[:8]}"
+
+    # Create session
+    await session_service.create_session(
+        app_name="shipping_coordinator", user_id="test_user", session_id=session_id
+    )
+    query_content = types.Content(role="user", parts=[types.Part(text=query)])
+    events = []
+
+    # STEP 1: Send initial request
+    async for event in runner.run_async(
+        user_id="test_user", session_id=session_id, new_message=query_content
+    ):
+        events.append(event)
+
+    # STEP 2: Check for approval
+    approval_info = check_for_approval(events)
+
+    # STEP 3: Handle approval if needed
+    if approval_info:
+        print(f"⏸️  Pausing for approval...")
+        print(f"🤔 Human Decision: {'APPROVE ✅' if auto_approve else 'REJECT ❌'}\n")
+
+        # Resume the agent
+        async for event in runner.run_async(
+            user_id="test_user",
+            session_id=session_id,
+            new_message=create_approval_response(approval_info, auto_approve),
+            invocation_id=approval_info["invocation_id"],
+        ):
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        print(f"Agent > {part.text}")
+    else:
+        print_agent_response(events)
+
+    print(f"{'='*60}\n")
+
+    
