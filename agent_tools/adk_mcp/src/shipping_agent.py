@@ -58,3 +58,25 @@ def place_shipping_order(
             "status": "rejected",
             "message": f"Order rejected: {num_containers} containers to {destination}",
         }
+    
+def create_shipping_app():
+    """Creates the shipping agent app with resumability."""
+    retry_config = get_retry_config()
+    
+    shipping_agent = LlmAgent(
+        name="shipping_agent",
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        instruction="""You are a shipping coordinator assistant.
+      
+      When users request to ship containers:
+       1. Use the place_shipping_order tool with the number of containers and destination
+       2. If the order status is 'pending', inform the user that approval is required
+       3. After receiving the final result, provide a clear summary including:
+          - Order status (approved/rejected)
+          - Order ID (if available)
+          - Number of containers and destination
+       4. Keep responses concise but informative
+      """,
+        tools=[FunctionTool(func=place_shipping_order)],
+    )
+
