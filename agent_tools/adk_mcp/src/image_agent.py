@@ -38,3 +38,30 @@ def create_image_agent():
     )
     
     return image_agent
+
+async def run_image_demo():
+    """Runs the image generation demo."""
+    print("--- Running MCP Image Agent Demo ---")
+    agent = create_image_agent()
+    runner = InMemoryRunner(agent=agent)
+    
+    query = "Provide a sample tiny image"
+    print(f"Running query: {query}")
+    
+    response = await runner.run_debug(query, verbose=True)
+    
+    # Save and display the image
+    output_dir = "generated_images"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for event in response:
+        if event.content and event.content.parts:
+            for part in event.content.parts:
+                if hasattr(part, "function_response") and part.function_response:
+                    for item in part.function_response.response.get("content", []):
+                        if item.get("type") == "image":
+                            image_data = base64.b64decode(item["data"])
+                            file_path = os.path.join(output_dir, "tiny_image.png")
+                            with open(file_path, "wb") as f:
+                                f.write(image_data)
+                            print(f"✅ Image saved to: {file_path}")
