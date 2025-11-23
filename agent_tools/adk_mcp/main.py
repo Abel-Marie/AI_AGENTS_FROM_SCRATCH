@@ -10,6 +10,10 @@ load_dotenv()
 
 async def main():
     """Main function to run the ADK MCP Project demos."""
+    # Try loading from current directory if not found
+    if not os.getenv("GOOGLE_API_KEY"):
+        load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
     if not os.getenv("GOOGLE_API_KEY"):
         print("❌ Error: GOOGLE_API_KEY not found in environment variables.")
         print("Please create a .env file with your GOOGLE_API_KEY.")

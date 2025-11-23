@@ -124,7 +124,7 @@ def create_approval_response(approval_info, approved):
         role="user", parts=[types.Part(function_response=confirmation_response)]
     )
 
-async def run_shipping_workflow(query: str, auto_approve: bool = True, session_service=None, runner=None):
+async def run_shipping_workflow(query: str, auto_approve: bool = True, interactive: bool = False, session_service=None, runner=None):
     """Runs a shipping workflow with approval handling."""
     print(f"\n{'='*60}")
     print(f"User > {query}\n")
@@ -151,13 +151,26 @@ async def run_shipping_workflow(query: str, auto_approve: bool = True, session_s
     # STEP 3: Handle approval if needed
     if approval_info:
         print(f"⏸️  Pausing for approval...")
-        print(f"🤔 Human Decision: {'APPROVE ✅' if auto_approve else 'REJECT ❌'}\n")
+        
+        decision = auto_approve
+        if interactive:
+            while True:
+                user_input = input("🤔 Human Decision (approve/reject): ").strip().lower()
+                if user_input in ["approve", "yes", "y"]:
+                    decision = True
+                    break
+                elif user_input in ["reject", "no", "n"]:
+                    decision = False
+                    break
+                print("Please enter 'approve' or 'reject'.")
+        
+        print(f"Decision: {'APPROVE ✅' if decision else 'REJECT ❌'}\n")
 
         # Resume the agent
         async for event in runner.run_async(
             user_id="test_user",
             session_id=session_id,
-            new_message=create_approval_response(approval_info, auto_approve),
+            new_message=create_approval_response(approval_info, decision),
             invocation_id=approval_info["invocation_id"],
         ):
             if event.content and event.content.parts:
@@ -171,22 +184,20 @@ async def run_shipping_workflow(query: str, auto_approve: bool = True, session_s
 
 
 async def run_shipping_demos():
-    """Runs the three shipping demo scenarios."""
+    """Runs the shipping demo scenarios."""
     print("--- Running Shipping Agent Demos ---")
     
+    # Create the app, session service, and runner here to isolate them
     session_service = InMemorySessionService()
     shipping_app = create_shipping_app()
-    
-    shipping_runner = Runner(
+    runner = Runner(
         app=shipping_app,
         session_service=session_service,
     )
 
     # Demo 1: Small order (Auto-approve)
-    await run_shipping_workflow("Ship 3 containers to Singapore", session_service=session_service, runner=shipping_runner)
+    await run_shipping_workflow("Ship 3 containers to Singapore", session_service=session_service, runner=runner)
 
-    # Demo 2: Large order (Approve)
-    await run_shipping_workflow("Ship 10 containers to Rotterdam", auto_approve=True, session_service=session_service, runner=shipping_runner)
-
-    # Demo 3: Large order (Reject)
-    await run_shipping_workflow("Ship 8 containers to Los Angeles", auto_approve=False, session_service=session_service, runner=shipping_runner)
+    # Demo 2: Large order (Interactive)
+    print("\n--- Interactive Large Order Demo ---")
+    await run_shipping_workflow("Ship 10 containers to Rotterdam", interactive=True, session_service=session_service, runner=runner)

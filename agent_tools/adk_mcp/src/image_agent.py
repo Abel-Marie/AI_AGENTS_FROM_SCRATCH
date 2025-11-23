@@ -51,7 +51,10 @@ async def run_image_demo():
     response = await runner.run_debug(query, verbose=True)
     
     # Save and display the image
-    output_dir = "generated_images"
+    # Get the directory of the current file (src/image_agent.py)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Go up one level to adk_mcp/ and then into generated_images/
+    output_dir = os.path.join(os.path.dirname(current_dir), "generated_images")
     os.makedirs(output_dir, exist_ok=True)
     
     for event in response:
