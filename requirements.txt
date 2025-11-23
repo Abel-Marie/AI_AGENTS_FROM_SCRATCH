@@ -1,0 +1,4 @@
+google-genai
+google-adk
+mcp
+python-dotenv
