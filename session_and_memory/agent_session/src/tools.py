@@ -18,3 +18,14 @@ def save_userinfo(
     tool_context.state["user:country"] = country
 
     return {"status": "success"}
+
+
+def retrieve_userinfo(tool_context: ToolContext) -> Dict[str, Any]:
+    """
+    Tool to retrieve user name and country from session state.
+    """
+    # Read from session state
+    user_name = tool_context.state.get("user:name", "Username not found")
+    country = tool_context.state.get("user:country", "Country not found")
+
+    return {"status": "success", "user_name": user_name, "country": country}
