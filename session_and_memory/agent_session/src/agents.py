@@ -34,3 +34,15 @@ def create_stateful_agent():
         """,
         tools=[save_userinfo, retrieve_userinfo],
     )
+
+def create_app_with_compaction(agent):
+    """Creates an App with events compaction enabled."""
+    return App(
+        name="research_app_compacting",
+        root_agent=agent,
+        events_compaction_config=EventsCompactionConfig(
+            compaction_interval=3,  # Trigger compaction every 3 invocations
+            overlap_size=1,  # Keep 1 previous turn for context
+        ),
+    )
+
