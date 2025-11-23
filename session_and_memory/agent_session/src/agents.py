@@ -13,3 +13,12 @@ def create_text_agent(name="text_chat_bot", description="A text chatbot"):
         name=name,
         description=description,
     )
+
+def create_llm_agent(name="text_chat_bot", description="A text chatbot"):
+    """Creates an LlmAgent (needed for DatabaseSessionService)."""
+    retry_config = get_retry_config()
+    return LlmAgent(
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        name=name,
+        description=description,
+    )
