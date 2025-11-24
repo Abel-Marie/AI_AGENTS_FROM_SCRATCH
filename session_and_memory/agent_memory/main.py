@@ -72,3 +72,30 @@ async def run_retrieval_demo():
     # Ask about birthday in a NEW session
     await run_session(runner, "When is my birthday?", "birthday-session-02")
 
+async def run_auto_save_demo():
+    print("\n--- Running Auto-Save Demo ---")
+    session_service = InMemorySessionService()
+    memory_service = InMemoryMemoryService()
+    
+    agent = create_auto_memory_agent()
+    runner = Runner(
+        agent=agent,
+        app_name=APP_NAME,
+        session_service=session_service,
+        memory_service=memory_service,
+    )
+
+    # 1. Tell agent about a gift (auto-saved)
+    await run_session(
+        runner,
+        "I gifted a new toy to my nephew on his 1st birthday!",
+        "auto-save-test",
+    )
+    print("✅ Turn completed (and auto-saved).")
+
+    # 2. Ask about the gift in a NEW session
+    await run_session(
+        runner,
+        "What did I gift my nephew?",
+        "auto-save-test-2",
+    )
