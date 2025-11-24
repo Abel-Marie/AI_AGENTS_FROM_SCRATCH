@@ -31,14 +31,15 @@ async def run_basic_memory_demo():
         memory_service=memory_service,
     )
 
-    # 1. User tells agent about favorite color
+    print("Step 1: Chat with the agent (e.g., tell it your favorite color).")
     await run_session(
         runner,
-        "My favorite color is blue-green. Can you write a Haiku about it?",
-        "conversation-01",
+        session_id="conversation-01",
+        interactive=True
     )
     
     # 2. Manually save session to memory
+    print("\nSaving session to memory...")
     session = await session_service.get_session(
         app_name=APP_NAME, user_id=USER_ID, session_id="conversation-01"
     )
@@ -47,12 +48,11 @@ async def run_basic_memory_demo():
 
 async def run_retrieval_demo():
     print("\n--- Running Retrieval Demo (load_memory) ---")
-    # We need a memory service with some data. Let's populate it first.
     session_service = InMemorySessionService()
     memory_service = InMemoryMemoryService()
     
     # Pre-populate memory
-    print("Populating memory with birthday info...")
+    print("Populating memory with birthday info (March 15th)...")
     temp_agent = create_memory_agent()
     temp_runner = Runner(agent=temp_agent, app_name=APP_NAME, session_service=session_service, memory_service=memory_service)
     await run_session(temp_runner, "My birthday is on March 15th.", "birthday-session-01")
@@ -61,6 +61,7 @@ async def run_retrieval_demo():
     print("✅ Birthday session saved to memory!")
 
     # Now use agent with load_memory
+    print("\nNow, ask the agent about your birthday in a NEW session.")
     agent = create_agent_with_load_memory()
     runner = Runner(
         agent=agent,
@@ -69,8 +70,7 @@ async def run_retrieval_demo():
         memory_service=memory_service,
     )
 
-    # Ask about birthday in a NEW session
-    await run_session(runner, "When is my birthday?", "birthday-session-02")
+    await run_session(runner, session_id="birthday-session-02", interactive=True)
 
 async def run_auto_save_demo():
     print("\n--- Running Auto-Save Demo ---")
@@ -85,19 +85,19 @@ async def run_auto_save_demo():
         memory_service=memory_service,
     )
 
-    # 1. Tell agent about a gift (auto-saved)
+    print("Step 1: Tell the agent something (it will be auto-saved).")
     await run_session(
         runner,
-        "I gifted a new toy to my nephew on his 1st birthday!",
-        "auto-save-test",
+        session_id="auto-save-test",
+        interactive=True
     )
-    print("✅ Turn completed (and auto-saved).")
+    print("✅ Session ended (and auto-saved).")
 
-    # 2. Ask about the gift in a NEW session
+    print("\nStep 2: Start a new session and ask about what you said.")
     await run_session(
         runner,
-        "What did I gift my nephew?",
-        "auto-save-test-2",
+        session_id="auto-save-test-2",
+        interactive=True
     )
 
 async def run_search_demo():
@@ -106,6 +106,7 @@ async def run_search_demo():
     memory_service = InMemoryMemoryService()
     
     # Populate memory
+    print("Populating memory with favorite color (blue)...")
     temp_agent = create_memory_agent()
     temp_runner = Runner(agent=temp_agent, app_name=APP_NAME, session_service=session_service, memory_service=memory_service)
     await run_session(temp_runner, "My favorite color is blue.", "color-session")
@@ -113,9 +114,11 @@ async def run_search_demo():
     await memory_service.add_session_to_memory(session)
     
     # Search
-    print("\nSearching for 'favorite color'...")
+    print("\nType a query to search your memory (e.g., 'favorite color').")
+    query = input("Search Query > ").strip()
+    
     search_response = await memory_service.search_memory(
-        app_name=APP_NAME, user_id=USER_ID, query="What is the user's favorite color?"
+        app_name=APP_NAME, user_id=USER_ID, query=query
     )
 
     print("🔍 Search Results:")
@@ -125,6 +128,77 @@ async def run_search_demo():
             text = memory.content.parts[0].text[:80]
             print(f"  [{memory.author}]: {text}...")
 
+async def run_memory_explorer():
+    print("\n--- Memory Explorer ---")
+    print("This tool lets you inspect all memories stored in the vector database.")
+    
+    # We use a persistent memory service for this demo to see 'real' data if we had it,
+    # but for this in-memory demo, we'll just use the in-memory one which is empty 
+    # unless we populate it in this run. 
+    # To make it useful, let's populate some dummy data if empty.
+    
+    session_service = InMemorySessionService()
+    memory_service = InMemoryMemoryService()
+    
+    # Check if empty (hacky check for demo)
+    # In a real app, we'd connect to a real DB.
+    print("Populating some sample memories for exploration...")
+    temp_agent = create_memory_agent()
+    temp_runner = Runner(agent=temp_agent, app_name=APP_NAME, session_service=session_service, memory_service=memory_service)
+    
+    facts = [
+        "The capital of France is Paris.",
+        "Python is a popular programming language.",
+        "The speed of light is approximately 299,792 km/s."
+    ]
+    
+    for i, fact in enumerate(facts):
+        await run_session(temp_runner, fact, f"fact-session-{i}")
+        session = await session_service.get_session(app_name=APP_NAME, user_id=USER_ID, session_id=f"fact-session-{i}")
+        await memory_service.add_session_to_memory(session)
+        
+    print("✅ Sample memories added.")
+    
+    while True:
+        print("\nOptions:")
+        print("1. Search Memory")
+        print("2. Back to Main Menu")
+        choice = input("Explorer > ").strip()
+        
+        if choice == "1":
+            query = input("Search Query > ").strip()
+            search_response = await memory_service.search_memory(
+                app_name=APP_NAME, user_id=USER_ID, query=query
+            )
+            print(f"Found {len(search_response.memories)} results:")
+            for mem in search_response.memories:
+                 if mem.content and mem.content.parts:
+                    print(f" - {mem.content.parts[0].text}")
+        elif choice == "2":
+            break
+
+async def run_teach_agent_game():
+    print("\n--- Teach the Agent Game ---")
+    print("Goal: Teach the agent 3 facts, then quiz it!")
+    
+    session_service = InMemorySessionService()
+    memory_service = InMemoryMemoryService()
+    agent = create_auto_memory_agent() # Use auto-save for smoother flow
+    runner = Runner(agent=agent, app_name=APP_NAME, session_service=session_service, memory_service=memory_service)
+    
+    print("\nPhase 1: Teaching")
+    print("Tell the agent 3 distinct facts (e.g., 'My dog's name is Rex').")
+    
+    for i in range(1, 4):
+        print(f"\nFact {i}:")
+        await run_session(runner, session_id=f"teaching-session-{i}", interactive=True)
+        
+    print("\nPhase 2: Quizzing")
+    print("Now, start a new session and ask the agent about what you taught it.")
+    await run_session(runner, session_id="quiz-session", interactive=True)
+    
+    print("\n✅ Game Over! Did the agent remember?")
+
 async def main():
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
@@ -133,14 +207,16 @@ async def main():
         return
 
     while True:
-        print("\n=== ADK Memory Project ===")
+        print("\n=== ADK Memory Project (Interactive) ===")
         print("1. Basic Memory (Manual Save)")
         print("2. Retrieval Demo (load_memory)")
         print("3. Auto-Save Demo")
         print("4. Search Memory Demo")
-        print("5. Exit")
+        print("5. Memory Explorer ")
+        print("6. Teach the Agent Game")
+        print("7. Exit")
         
-        choice = input("Enter your choice (1-5): ").strip()
+        choice = input("Enter your choice (1-7): ").strip()
         
         if choice == "1":
             await run_basic_memory_demo()
@@ -151,6 +227,10 @@ async def main():
         elif choice == "4":
             await run_search_demo()
         elif choice == "5":
+            await run_memory_explorer()
+        elif choice == "6":
+            await run_teach_agent_game()
+        elif choice == "7":
             print("Exiting...")
             break
         else:
@@ -158,4 +238,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
