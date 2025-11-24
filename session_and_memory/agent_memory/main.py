@@ -44,3 +44,31 @@ async def run_basic_memory_demo():
     )
     await memory_service.add_session_to_memory(session)
     print("✅ Session added to memory!")
+
+async def run_retrieval_demo():
+    print("\n--- Running Retrieval Demo (load_memory) ---")
+    # We need a memory service with some data. Let's populate it first.
+    session_service = InMemorySessionService()
+    memory_service = InMemoryMemoryService()
+    
+    # Pre-populate memory
+    print("Populating memory with birthday info...")
+    temp_agent = create_memory_agent()
+    temp_runner = Runner(agent=temp_agent, app_name=APP_NAME, session_service=session_service, memory_service=memory_service)
+    await run_session(temp_runner, "My birthday is on March 15th.", "birthday-session-01")
+    birthday_session = await session_service.get_session(app_name=APP_NAME, user_id=USER_ID, session_id="birthday-session-01")
+    await memory_service.add_session_to_memory(birthday_session)
+    print("✅ Birthday session saved to memory!")
+
+    # Now use agent with load_memory
+    agent = create_agent_with_load_memory()
+    runner = Runner(
+        agent=agent,
+        app_name=APP_NAME,
+        session_service=session_service,
+        memory_service=memory_service,
+    )
+
+    # Ask about birthday in a NEW session
+    await run_session(runner, "When is my birthday?", "birthday-session-02")
+
