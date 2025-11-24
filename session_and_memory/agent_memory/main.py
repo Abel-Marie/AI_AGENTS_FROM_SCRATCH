@@ -125,4 +125,37 @@ async def run_search_demo():
             text = memory.content.parts[0].text[:80]
             print(f"  [{memory.author}]: {text}...")
 
-            
+async def main():
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        print("❌ Error: GOOGLE_API_KEY not found in environment variables.")
+        print("Please ensure .env file exists in adk_session_memory/ with GOOGLE_API_KEY.")
+        return
+
+    while True:
+        print("\n=== ADK Memory Project ===")
+        print("1. Basic Memory (Manual Save)")
+        print("2. Retrieval Demo (load_memory)")
+        print("3. Auto-Save Demo")
+        print("4. Search Memory Demo")
+        print("5. Exit")
+        
+        choice = input("Enter your choice (1-5): ").strip()
+        
+        if choice == "1":
+            await run_basic_memory_demo()
+        elif choice == "2":
+            await run_retrieval_demo()
+        elif choice == "3":
+            await run_auto_save_demo()
+        elif choice == "4":
+            await run_search_demo()
+        elif choice == "5":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
