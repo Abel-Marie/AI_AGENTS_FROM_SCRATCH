@@ -23,3 +23,15 @@ def create_agent_with_load_memory(name="MemoryDemoAgent"):
         instruction="Answer user questions in simple words. Use load_memory tool if you need to recall past conversations.",
         tools=[load_memory],
     )
+
+
+def create_auto_memory_agent(name="AutoMemoryAgent"):
+    """Creates an agent with auto-save callback and preload_memory."""
+    retry_config = get_retry_config()
+    return LlmAgent(
+        model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+        name=name,
+        instruction="Answer user questions.",
+        tools=[preload_memory],
+        after_agent_callback=auto_save_to_memory,
+    )
