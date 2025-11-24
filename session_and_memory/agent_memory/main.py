@@ -99,3 +99,30 @@ async def run_auto_save_demo():
         "What did I gift my nephew?",
         "auto-save-test-2",
     )
+
+async def run_search_demo():
+    print("\n--- Running Search Memory Demo ---")
+    session_service = InMemorySessionService()
+    memory_service = InMemoryMemoryService()
+    
+    # Populate memory
+    temp_agent = create_memory_agent()
+    temp_runner = Runner(agent=temp_agent, app_name=APP_NAME, session_service=session_service, memory_service=memory_service)
+    await run_session(temp_runner, "My favorite color is blue.", "color-session")
+    session = await session_service.get_session(app_name=APP_NAME, user_id=USER_ID, session_id="color-session")
+    await memory_service.add_session_to_memory(session)
+    
+    # Search
+    print("\nSearching for 'favorite color'...")
+    search_response = await memory_service.search_memory(
+        app_name=APP_NAME, user_id=USER_ID, query="What is the user's favorite color?"
+    )
+
+    print("🔍 Search Results:")
+    print(f"  Found {len(search_response.memories)} relevant memories")
+    for memory in search_response.memories:
+        if memory.content and memory.content.parts:
+            text = memory.content.parts[0].text[:80]
+            print(f"  [{memory.author}]: {text}...")
+
+            
