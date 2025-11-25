@@ -33,7 +33,7 @@ async def interactive_log_viewer():
         
         choice = input("Select option (1-7): ").strip()
         
-        with open(log_file, "r", encoding="utf-8") as f:
+        with open(log_file, "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
         
         if choice == "1":
@@ -136,7 +136,7 @@ async def step_by_step_debug_guide():
     
     log_file = "logger.log"
     if os.path.exists(log_file):
-        with open(log_file, "r", encoding="utf-8") as f:
+        with open(log_file, "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
         
         error_lines = [l for l in lines if "ERROR" in l or "ValidationError" in l]
