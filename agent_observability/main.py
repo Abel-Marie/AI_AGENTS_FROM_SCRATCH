@@ -81,8 +81,14 @@ async def main():
         
         if choice == "1":
             print("\n--- Running Broken Agent ---")
+            query = input("Enter your research topic (or press Enter for default 'quantum computing'): ").strip()
+            if not query:
+                query = "Find recent papers on quantum computing"
+            else:
+                query = f"Find recent papers on {query}"
+            
             agent = create_broken_agent()
-            await run_agent_debug(agent, "Find recent papers on quantum computing")
+            await run_agent_debug(agent, query)
             print("\n❌ Agent failed? Good! Now check the logs.")
             
         elif choice == "2":
@@ -90,8 +96,14 @@ async def main():
             
         elif choice == "3":
             print("\n--- Running Fixed Agent ---")
+            query = input("Enter your research topic (or press Enter for default 'quantum computing'): ").strip()
+            if not query:
+                query = "Find recent papers on quantum computing"
+            else:
+                query = f"Find recent papers on {query}"
+            
             agent = create_fixed_agent()
-            await run_agent_debug(agent, "Find recent papers on quantum computing")
+            await run_agent_debug(agent, query)
             
         elif choice == "4":
             await challenge_mode()
