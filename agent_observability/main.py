@@ -14,33 +14,94 @@ from src.utils import run_agent_debug
 # Load environment variables
 load_dotenv()
 
-async def analyze_logs():
-    """Reads the log file and highlights errors."""
+async def interactive_log_viewer():
+    """Interactive log viewer with filtering and search."""
     log_file = "logger.log"
     if not os.path.exists(log_file):
         print("❌ No log file found. Run the broken agent first.")
         return
 
-    print(f"\n🔍 Analyzing {log_file}...")
-    with open(log_file, "r") as f:
-        lines = f.readlines()
+    while True:
+        print("\n=== Interactive Log Viewer ===")
+        print("1. View All Logs")
+        print("2. View ERROR logs only")
+        print("3. View INFO logs only")
+        print("4. View DEBUG logs only")
+        print("5. Search logs")
+        print("6. Show errors with context")
+        print("7. Back to main menu")
         
-    error_found = False
-    for line in lines:
-        if "ERROR" in line or "Traceback" in line or "ValidationError" in line:
-            print(f"🔴 {line.strip()}") # Highlight error
-            error_found = True
-        elif "DEBUG" in line:
-            # Print debug lines in grey/dim if possible, or just normal
-            # For simplicity in standard terminal:
-            pass 
-    
-    if error_found:
-        print("\n💡 Analysis: Errors detected in the logs.")
-        print("   Look for 'ValidationError' or type mismatches.")
-        print("   The agent might be passing a 'str' where a 'list' is expected.")
-    else:
-        print("✅ No obvious errors found in the logs (or debug level too low).")
+        choice = input("Select option (1-7): ").strip()
+        
+        with open(log_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        
+        if choice == "1":
+            print(f"\n📋 All logs ({len(lines)} lines):")
+            for line in lines[-50:]:  # Show last 50 lines
+                print(line.rstrip())
+            if len(lines) > 50:
+                print(f"\n... ({len(lines) - 50} more lines above)")
+                
+        elif choice == "2":
+            print("\n🔴 ERROR logs:")
+            error_lines = [l for l in lines if "ERROR" in l]
+            if error_lines:
+                for line in error_lines:
+                    print(line.rstrip())
+            else:
+                print("No ERROR logs found.")
+                
+        elif choice == "3":
+            print("\n💡 INFO logs:")
+            info_lines = [l for l in lines if "INFO" in l]
+            for line in info_lines[-30:]:
+                print(line.rstrip())
+            if len(info_lines) > 30:
+                print(f"\n... ({len(info_lines) - 30} more lines above)")
+                
+        elif choice == "4":
+            print("\n🐛 DEBUG logs:")
+            debug_lines = [l for l in lines if "DEBUG" in l]
+            for line in debug_lines[-30:]:
+                print(line.rstrip())
+            if len(debug_lines) > 30:
+                print(f"\n... ({len(debug_lines) - 30} more lines above)")
+                
+        elif choice == "5":
+            keyword = input("Enter search keyword: ").strip()
+            if keyword:
+                print(f"\n🔍 Search results for '{keyword}':")
+                results = [l for l in lines if keyword.lower() in l.lower()]
+                if results:
+                    for line in results:
+                        print(line.rstrip())
+                else:
+                    print(f"No results found for '{keyword}'")
+                    
+        elif choice == "6":
+            print("\n🎯 Errors with context (±3 lines):")
+            error_indices = [i for i, l in enumerate(lines) if "ERROR" in l or "ValidationError" in l]
+            if error_indices:
+                for idx in error_indices:
+                    start = max(0, idx - 3)
+                    end = min(len(lines), idx + 4)
+                    print(f"\n--- Context around line {idx + 1} ---")
+                    for i in range(start, end):
+                        prefix = ">>> " if i == idx else "    "
+                        print(f"{prefix}{lines[i].rstrip()}")
+            else:
+                print("No errors found in logs.")
+                
+        elif choice == "7":
+            break
+        else:
+            print("Invalid choice.")
+
+async def analyze_logs():
+    """Simple log analysis - kept for backwards compatibility."""
+    print("\n💡 Tip: Use the 'Interactive Log Viewer' for better analysis!")
+    await interactive_log_viewer()
 
 async def challenge_mode():
     """Guided challenge to fix the bug."""
@@ -72,12 +133,13 @@ async def main():
     while True:
         print("\n=== Agent Observability & Debugging ===")
         print("1. Run Broken Agent (Expect Failure)")
-        print("2. Analyze Logs (Find the Bug)")
-        print("3. Run Fixed Agent (Reference Solution)")
-        print("4. Challenge Mode (Fix it yourself)")
-        print("5. Exit")
+        print("2. Analyze Logs (Quick View)")
+        print("3. Interactive Log Viewer (Detailed)")
+        print("4. Run Fixed Agent (Reference Solution)")
+        print("5. Challenge Mode (Fix it yourself)")
+        print("6. Exit")
         
-        choice = input("Enter your choice (1-5): ").strip()
+        choice = input("Enter your choice (1-6): ").strip()
         
         if choice == "1":
             print("\n--- Running Broken Agent ---")
@@ -95,6 +157,9 @@ async def main():
             await analyze_logs()
             
         elif choice == "3":
+            await interactive_log_viewer()
+            
+        elif choice == "4":
             print("\n--- Running Fixed Agent ---")
             query = input("Enter your research topic (or press Enter for default 'quantum computing'): ").strip()
             if not query:
@@ -105,10 +170,10 @@ async def main():
             agent = create_fixed_agent()
             await run_agent_debug(agent, query)
             
-        elif choice == "4":
+        elif choice == "5":
             await challenge_mode()
             
-        elif choice == "5":
+        elif choice == "6":
             print("Exiting...")
             cleanup_logs()
             break
