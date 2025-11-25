@@ -103,23 +103,134 @@ async def analyze_logs():
     print("\n💡 Tip: Use the 'Interactive Log Viewer' for better analysis!")
     await interactive_log_viewer()
 
+async def step_by_step_debug_guide():
+    """Interactive step-by-step debugging tutorial."""
+    print("\n" + "="*60)
+    print("🎓 STEP-BY-STEP DEBUG GUIDE")
+    print("="*60)
+    print("\nYou'll learn how to debug a type mismatch error in the agent.")
+    input("\nPress Enter to start...")
+    
+    # Step 1: Run and observe failure
+    print("\n" + "-"*60)
+    print("📍 STEP 1: Run the Broken Agent and Observe the Failure")
+    print("-"*60)
+    print("\nFirst, let's run the broken agent to see what happens.")
+    print("This will generate logs that we can analyze.")
+    
+    choice = input("\nRun broken agent now? (y/n): ").strip().lower()
+    if choice == 'y':
+        agent = create_broken_agent()
+        await run_agent_debug(agent, "Find recent papers on AI safety")
+        print("\n❌ The agent failed! Let's find out why.")
+    
+    input("\nPress Enter to continue to Step 2...")
+    
+    # Step 2: Analyze the stack trace
+    print("\n" + "-"*60)
+    print("📍 STEP 2: Analyze the Stack Trace")
+    print("-"*60)
+    print("\nLet's look at the ERROR logs to understand what went wrong.")
+    print("\n💡 Key Question: What type of error do you see?")
+    print("   (Look for words like 'ValidationError', 'TypeError', etc.)")
+    
+    log_file = "logger.log"
+    if os.path.exists(log_file):
+        with open(log_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        
+        error_lines = [l for l in lines if "ERROR" in l or "ValidationError" in l]
+        if error_lines:
+            print("\n🔴 Error found:")
+            for line in error_lines[:3]:  # Show first 3 errors
+                print(f"   {line.strip()}")
+    
+    input("\nPress Enter to continue to Step 3...")
+    
+    # Step 3: Identify the type mismatch
+    print("\n" + "-"*60)
+    print("📍 STEP 3: Identify the Type Mismatch")
+    print("-"*60)
+    print("\n🔍 Analysis:")
+    print("   The error says: 'Expected type List[str] but got str'")
+    print("\n💡 This means:")
+    print("   - The function expects a LIST of strings: ['paper1', 'paper2']")
+    print("   - But it's receiving a SINGLE string: 'paper1'")
+    print("\n📝 Location:")
+    print("   - File: agent_observability/src/broken_agent.py")
+    print("   - Function: count_papers()")
+    
+    input("\nPress Enter to continue to Step 4...")
+    
+    # Step 4: Examine the code
+    print("\n" + "-"*60)
+    print("📍 STEP 4: Examine the Code")
+    print("-"*60)
+    print("\nLet's look at the broken code:")
+    print("\n" + "─"*50)
+    print("def count_papers(papers: str):  # ❌ WRONG!")
+    print("    '''")
+    print("    Counts the number of papers.")
+    print("    Args:")
+    print("        papers: A list of strings  # ← Says 'list' in docs")
+    print("    '''")
+    print("    return len(papers)")
+    print("─"*50)
+    print("\n🤔 Do you see the problem?")
+    print("   - Type hint says: papers: str (a single string)")
+    print("   - Documentation says: 'A list of strings'")
+    print("   - There's a MISMATCH!")
+    
+    input("\nPress Enter to continue to Step 5...")
+    
+    # Step 5: Apply the fix
+    print("\n" + "-"*60)
+    print("📍 STEP 5: Apply the Fix")
+    print("-"*60)
+    print("\n✅ The correct code should be:")
+    print("\n" + "─"*50)
+    print("from typing import List")
+    print("")
+    print("def count_papers(papers: List[str]):  # ✅ CORRECT!")
+    print("    '''")
+    print("    Counts the number of papers.")
+    print("    Args:")
+    print("        papers: A list of strings")
+    print("    '''")
+    print("    return len(papers)")
+    print("─"*50)
+    print("\n📚 Key Lesson:")
+    print("   Type hints must match the actual data type!")
+    print("   The agent uses type hints to validate function calls.")
+    
+    input("\nPress Enter to see the summary...")
+    
+    # Summary
+    print("\n" + "="*60)
+    print("🎉 DEBUGGING COMPLETE!")
+    print("="*60)
+    print("\n📖 What You Learned:")
+    print("   1. How to run an agent and observe failures")
+    print("   2. How to read error logs and stack traces")
+    print("   3. How to identify type mismatch errors")
+    print("   4. How to fix type hints in Python")
+    print("   5. Why type safety matters in AI agents")
+    print("\n💡 Next Step:")
+    print("   Run the 'Fixed Agent' option to see the correct implementation!")
+    
 async def challenge_mode():
-    """Guided challenge to fix the bug."""
-    print("\n⚔️  CHALLENGE MODE ⚔️")
-    print("1. Open 'agent_observability/src/broken_agent.py'")
-    print("2. Find the 'count_papers' function.")
-    print("3. Identify why it fails (Hint: Check the type hint of 'papers').")
-    print("4. Fix the code!")
-    
-    input("\nPress Enter once you have fixed the code...")
-    
-    print("\nRunning the agent with YOUR fix...")
-    # Reload the module to pick up changes (simplified for this demo, usually requires importlib)
-    # Since we can't easily hot-reload in this simple script structure without complexity,
-    # we'll just re-import or warn the user.
-    print("⚠️  Note: For the fix to take effect in this running process, we would need to reload modules.")
-    print("   Please restart 'main.py' and select 'Run Broken Agent' (which should now be fixed) to verify.")
-    print("   Or, run the 'Fixed Agent' option to see the reference solution.")
+    """Quick challenge - redirects to step-by-step guide."""
+    print("\n💡 For a better learning experience, use the Step-by-Step Guide!")
+    choice = input("Start the Step-by-Step Debug Guide? (y/n): ").strip().lower()
+    if choice == 'y':
+        await step_by_step_debug_guide()
+    else:
+        print("\n⚔️  QUICK CHALLENGE")
+        print("1. Open 'agent_observability/src/broken_agent.py'")
+        print("2. Find the 'count_papers' function")
+        print("3. Change: papers: str → papers: List[str]")
+        print("4. Add: from typing import List")
+        input("\nPress Enter when done...")
 
 async def main():
     api_key = os.getenv("GOOGLE_API_KEY")
@@ -135,11 +246,12 @@ async def main():
         print("1. Run Broken Agent (Expect Failure)")
         print("2. Analyze Logs (Quick View)")
         print("3. Interactive Log Viewer (Detailed)")
-        print("4. Run Fixed Agent (Reference Solution)")
-        print("5. Challenge Mode (Fix it yourself)")
-        print("6. Exit")
+        print("4. Step-by-Step Debug Guide (Tutorial)")
+        print("5. Run Fixed Agent (Reference Solution)")
+        print("6. Challenge Mode (Quick Fix)")
+        print("7. Exit")
         
-        choice = input("Enter your choice (1-6): ").strip()
+        choice = input("Enter your choice (1-7): ").strip()
         
         if choice == "1":
             print("\n--- Running Broken Agent ---")
@@ -160,6 +272,9 @@ async def main():
             await interactive_log_viewer()
             
         elif choice == "4":
+            await step_by_step_debug_guide()
+            
+        elif choice == "5":
             print("\n--- Running Fixed Agent ---")
             query = input("Enter your research topic (or press Enter for default 'quantum computing'): ").strip()
             if not query:
@@ -170,10 +285,10 @@ async def main():
             agent = create_fixed_agent()
             await run_agent_debug(agent, query)
             
-        elif choice == "5":
+        elif choice == "6":
             await challenge_mode()
             
-        elif choice == "6":
+        elif choice == "7":
             print("Exiting...")
             cleanup_logs()
             break
